@@ -3,85 +3,13 @@
 
 using namespace std;
 
-void SumAndProduct(const int* array, int size, int* sum, long long* product)
+bool Contains(const int* array, int size, int value)
 {
-    *sum = 0;
-    *product = 1;
     for (int i = 0; i < size; i++)
     {
-        *sum += *(array + i);
-        *product *= *(array + i);
+        if (array[i] == value) return true;
     }
-}
-
-void CountSigns(const int* array, int size, int* negative, int* positive, int* zero)
-{
-    *negative = 0;
-    *positive = 0;
-    *zero = 0;
-
-    for (int i = 0; i < size; i++)
-    {
-        if (*(array + i) < 0) (*negative)++;
-        else if (*(array + i) > 0) (*positive)++;
-        else (*zero)++;
-    }
-}
-
-int* FindSubset(int* arrayA, int sizeA, int* arrayB, int sizeB)
-{
-    for (int begin = 0; begin <= sizeA - sizeB; begin++)
-    {
-        bool equal = true;
-        for (int i = 0; i < sizeB; i++)
-        {
-            if (*(arrayA + begin + i) != *(arrayB + i)) equal = false;
-        }
-        if (equal) return arrayA + begin;
-    }
-    return 0;
-}
-
-int* RemoveNegative(const int* array, int size, int* newSize)
-{
-    *newSize = 0;
-    for (int i = 0; i < size; i++)
-    {
-        if (*(array + i) >= 0) (*newSize)++;
-    }
-
-    int* result = new int[*newSize];
-    int index = 0;
-    for (int i = 0; i < size; i++)
-    {
-        if (*(array + i) >= 0) result[index++] = *(array + i);
-    }
-    return result;
-}
-
-int* AppendBlock(const int* array, int size, const int* block, int blockSize)
-{
-    int* result = new int[size + blockSize];
-    for (int i = 0; i < size; i++) result[i] = array[i];
-    for (int i = 0; i < blockSize; i++) result[size + i] = block[i];
-    return result;
-}
-
-int* InsertBlock(const int* array, int size, const int* block, int blockSize, int index)
-{
-    int* result = new int[size + blockSize];
-    for (int i = 0; i < index; i++) result[i] = array[i];
-    for (int i = 0; i < blockSize; i++) result[index + i] = block[i];
-    for (int i = index; i < size; i++) result[i + blockSize] = array[i];
-    return result;
-}
-
-int* DeleteBlock(const int* array, int size, int index, int blockSize)
-{
-    int* result = new int[size - blockSize];
-    for (int i = 0; i < index; i++) result[i] = array[i];
-    for (int i = index + blockSize; i < size; i++) result[i - blockSize] = array[i];
-    return result;
+    return false;
 }
 
 void PrintArray(const int* array, int size)
@@ -94,50 +22,83 @@ int main()
 {
 
 
-    int array[7] = { 4, -2, 0, 7, -5, 9, 1 };
-    const int size = 7;
+    int sizeA;
+    int sizeB;
+    cout << "Enter sizes M and N: ";
+    cin >> sizeA >> sizeB;
+
+    int* arrayA = new int[sizeA];
+    int* arrayB = new int[sizeB];
+    cout << "Enter array A: ";
+    for (int i = 0; i < sizeA; i++) cin >> arrayA[i];
+    cout << "Enter array B: ";
+    for (int i = 0; i < sizeB; i++) cin >> arrayB[i];
+
     // Task 1
-    int sum;
-    long long product;
-    SumAndProduct(array, size, &sum, &product);
-    cout << "Sum: " << sum << "\nProduct: " << product << '\n';
+    int mergedSize = sizeA + sizeB;
+    int* merged = new int[mergedSize];
+    for (int i = 0; i < sizeA; i++) merged[i] = arrayA[i];
+    for (int i = 0; i < sizeB; i++) merged[sizeA + i] = arrayB[i];
+
+    cout << "Merged array: ";
+    PrintArray(merged, mergedSize);
+
     // Task 2
-    int negative;
-    int positive;
-    int zero;
-    CountSigns(array, size, &negative, &positive, &zero);
-    cout << "Negative: " << negative << "\nPositive: " << positive
-        << "\nZero: " << zero << '\n';
+    int commonSize = 0;
+    for (int i = 0; i < sizeA; i++)
+    {
+        if (Contains(arrayB, sizeB, arrayA[i]))
+        {
+            bool alreadyCounted = false;
+            for (int j = 0; j < i; j++)
+            {
+                if (arrayA[j] == arrayA[i]) alreadyCounted = true;
+            }
+            if (!alreadyCounted) commonSize++;
+        }
+    }
+
+    int* common = new int[commonSize];
+    int commonIndex = 0;
+    for (int i = 0; i < sizeA; i++)
+    {
+        if (Contains(arrayB, sizeB, arrayA[i]) && !Contains(common, commonIndex, arrayA[i]))
+        {
+            common[commonIndex++] = arrayA[i];
+        }
+    }
+
+    cout << "Common elements: ";
+    PrintArray(common, commonSize);
+
     // Task 3
-    int subset[3] = { 0, 7, -5 };
-    int* found = FindSubset(array, size, subset, 3);
+    int removeChoice;
+    cout << "1 - remove even, 2 - remove odd: ";
+    cin >> removeChoice;
 
-    if (found != 0) cout << "Subset begins at index " << found - array << '\n';
-    else cout << "Subset not found.\n";
-    // Task 4
-    int nonNegativeSize;
-    int* nonNegative = RemoveNegative(array, size, &nonNegativeSize);
+    int filteredSize = 0;
+    for (int i = 0; i < sizeA; i++)
+    {
+        bool remove = removeChoice == 1 ? arrayA[i] % 2 == 0 : arrayA[i] % 2 != 0;
+        if (!remove) filteredSize++;
+    }
 
-    PrintArray(nonNegative, nonNegativeSize);
-    // Task 5
-    int block[2] = { 100, 200 };
-    int* appended = AppendBlock(array, size, block, 2);
+    int* filtered = new int[filteredSize];
+    int filteredIndex = 0;
+    for (int i = 0; i < sizeA; i++)
+    {
+        bool remove = removeChoice == 1 ? arrayA[i] % 2 == 0 : arrayA[i] % 2 != 0;
+        if (!remove) filtered[filteredIndex++] = arrayA[i];
+    }
 
-    PrintArray(appended, size + 2);
-    // Task 6
-    int* inserted = InsertBlock(array, size, block, 2, 3);
+    cout << "Filtered array: ";
+    PrintArray(filtered, filteredSize);
 
-    PrintArray(inserted, size + 2);
-    // Task 7
-    int* shortened = DeleteBlock(array, size, 2, 3);
-
-    PrintArray(shortened, size - 3);
-
-    delete[] nonNegative;
-    delete[] appended;
-    delete[] inserted;
-    delete[] shortened;
+    delete[] arrayA;
+    delete[] arrayB;
+    delete[] merged;
+    delete[] common;
+    delete[] filtered;
 
     return 0;
 }
-
