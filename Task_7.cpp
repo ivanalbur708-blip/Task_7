@@ -3,102 +3,124 @@
 
 using namespace std;
 
-bool Contains(const int* array, int size, int value)
+void PrintArray(const int* arr, int size)
 {
     for (int i = 0; i < size; i++)
     {
-        if (array[i] == value) return true;
+        cout << arr[i] << ' ';
     }
-    return false;
+    cout << '\n';
 }
 
-void PrintArray(const int* array, int size)
+void InsertionSort(int* arr, int start, int end, bool descending)
 {
-    for (int i = 0; i < size; i++) cout << array[i] << ' ';
-    cout << '\n';
+    for (int i = start + 1; i < end; i++)
+    {
+        int key = arr[i];
+        int j = i - 1;
+
+        while (j >= start &&
+            (descending ? arr[j] < key : arr[j] > key))
+        {
+            arr[j + 1] = arr[j];
+            j--;
+        }
+
+        arr[j + 1] = key;
+    }
+}
+
+
+void SortArray(int* arr, int size, bool descending = false)
+{
+    InsertionSort(arr, 0, size, descending);
+}
+
+
+void SortHalves(int* arr, int size)
+{
+    int middle = size / 2;
+
+    InsertionSort(arr, 0, middle, true);
+    InsertionSort(arr, middle, size, false);
+}
+
+void SortBetweenNegatives(int* arr, int size)
+{
+    int left = -1;
+    int right = -1;
+
+    for (int i = 0; i < size; i++)
+    {
+        if (arr[i] < 0)
+        {
+            if (left == -1)
+            {
+                left = i;
+            }
+
+            right = i;
+        }
+    }
+
+    if (left == -1 || left == right)
+    {
+        cout << "Not enough negative elements\n";
+        return;
+    }
+
+    cout << "Left negative index: " << left << '\n';
+    cout << "Right negative index: " << right << '\n';
+
+    InsertionSort(arr, left + 1, right, false);
 }
 
 int main()
 {
+    srand(time(nullptr));
 
-
-    int sizeA;
-    int sizeB;
-    cout << "Enter sizes M and N: ";
-    cin >> sizeA >> sizeB;
-
-    int* arrayA = new int[sizeA];
-    int* arrayB = new int[sizeB];
-    cout << "Enter array A: ";
-    for (int i = 0; i < sizeA; i++) cin >> arrayA[i];
-    cout << "Enter array B: ";
-    for (int i = 0; i < sizeB; i++) cin >> arrayB[i];
+    const int SIZE = 10;
 
     // Task 1
-    int mergedSize = sizeA + sizeB;
-    int* merged = new int[mergedSize];
-    for (int i = 0; i < sizeA; i++) merged[i] = arrayA[i];
-    for (int i = 0; i < sizeB; i++) merged[sizeA + i] = arrayB[i];
+    int arr1[SIZE] = { 8, 3, -5, 12, 0, 7, 2, -9, 15, 4 };
 
-    cout << "Merged array: ";
-    PrintArray(merged, mergedSize);
+    cout << "Original: ";
+    PrintArray(arr1, SIZE);
+
+    SortArray(arr1, SIZE);
+    cout << "Ascending: ";
+    PrintArray(arr1, SIZE);
+
+    SortArray(arr1, SIZE, true);
+    cout << "Descending: ";
+    PrintArray(arr1, SIZE);
 
     // Task 2
-    int commonSize = 0;
-    for (int i = 0; i < sizeA; i++)
-    {
-        if (Contains(arrayB, sizeB, arrayA[i]))
-        {
-            bool alreadyCounted = false;
-            for (int j = 0; j < i; j++)
-            {
-                if (arrayA[j] == arrayA[i]) alreadyCounted = true;
-            }
-            if (!alreadyCounted) commonSize++;
-        }
-    }
+    int arr2[SIZE] = { 4, 9, 2, 7, 1, 8, 3, 6, 5, 0 };
 
-    int* common = new int[commonSize];
-    int commonIndex = 0;
-    for (int i = 0; i < sizeA; i++)
-    {
-        if (Contains(arrayB, sizeB, arrayA[i]) && !Contains(common, commonIndex, arrayA[i]))
-        {
-            common[commonIndex++] = arrayA[i];
-        }
-    }
+    cout << "Original: ";
+    PrintArray(arr2, SIZE);
 
-    cout << "Common elements: ";
-    PrintArray(common, commonSize);
+    SortHalves(arr2, SIZE);
+
+    cout << "Sorted halves: ";
+    PrintArray(arr2, SIZE);
 
     // Task 3
-    int removeChoice;
-    cout << "1 - remove even, 2 - remove odd: ";
-    cin >> removeChoice;
+    int arr3[SIZE];
 
-    int filteredSize = 0;
-    for (int i = 0; i < sizeA; i++)
+    for (int i = 0; i < SIZE; i++)
     {
-        bool remove = removeChoice == 1 ? arrayA[i] % 2 == 0 : arrayA[i] % 2 != 0;
-        if (!remove) filteredSize++;
+        arr3[i] = rand() % 41 - 20;
     }
 
-    int* filtered = new int[filteredSize];
-    int filteredIndex = 0;
-    for (int i = 0; i < sizeA; i++)
-    {
-        bool remove = removeChoice == 1 ? arrayA[i] % 2 == 0 : arrayA[i] % 2 != 0;
-        if (!remove) filtered[filteredIndex++] = arrayA[i];
-    }
+    cout << "Original: ";
+    PrintArray(arr3, SIZE);
 
-    cout << "Filtered array: ";
-    PrintArray(filtered, filteredSize);
+    SortBetweenNegatives(arr3, SIZE);
 
-    delete[] arrayA;
-    delete[] arrayB;
-    delete[] merged;
-    delete[] common;
-    delete[] filtered;
+    cout << "Result: ";
+    PrintArray(arr3, SIZE);
 
     return 0;
 }
